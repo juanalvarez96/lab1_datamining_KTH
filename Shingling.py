@@ -22,17 +22,6 @@ class Shingling():
             a=a+hash(word)%mod
         return a
 
-    
-    def just_charachters(self, doc):
-        filter_chars = [' ', '.', '-', '´', ',', '(', ')', '‘', '’']
-        text = doc.content
-        filtered_text = ''.join((filter(lambda x: x not in filter_chars, text)))
-        '''
-        for i in range(len(filtered_text)-self.k+1):
-            pdb.set_trace()
-            shingle = words[i:i+self.k]
-
-        '''
 
     def make_shingles(self, doc):
         # We receive a row type from main class

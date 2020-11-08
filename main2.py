@@ -2,6 +2,7 @@ import pdb
 import numpy as np
 from Shingling import Shingling
 from CompareSets import CompareSets
+from CompareSignature import CompareSignature
 import random
 
 def cleanDoc(doc):
@@ -60,7 +61,7 @@ print("Shape of characteristic matrix: {}".format(M.shape))
 # Generate permutated rows
 from numpy.random import randint
 #pdb.set_trace()
-signature_num = 4
+signature_num = 6
 prime = 15
 values = random.sample(range(1, len(M)), signature_num*2)
 a_coef = values[0:signature_num]
@@ -78,8 +79,8 @@ for perm in perms:
             perm.append(val)
             i = i+1
         else:
-            print("Repeated value:{}\nArray:{}\n".format(val, perm))
-            print("Searching for new unique value...\n")
+            #print("Repeated value:{}\nArray:{}\n".format(val, perm))
+            #print("Searching for new unique value...\n")
             a_coef[k]=np.random.randint(0, len(M))
             b_coef[k]=np.random.randint(0, len(M))
     k = k+1
@@ -109,4 +110,48 @@ for rIndex in range(0, M1.shape[0]-1):
     if len(indexes != 0):
         change(indexes, rIndex)
 
+
+
+# Compare signatures
+sig_comparator = CompareSignature()
+#sig_comparator.comparator(minHashing[:, 0], minHashing[:, 2])
+#pdb.set_trace()
+
+# LSH
+b = 3 # Number of bands
+r = 2 # Number of rows per band
+k = 60 # Number of buckets
+t = (1/b)**(1/r) # Threshold
+aux = 0
+import mmh3
+results=[]
+# hash to bucket function:
+def hash_to_bucket(e, B):
+    i = mmh3.hash128(str(e))
+    p = i / float(2**128)
+    for j in range(0, B):
+        if j/float(B) <= p and (j+1)/float(B) > p:
+            return j+1
+    return B
+aux2 = 0
+#pdb.set_trace()
+while aux < len(minHashing)/r: 
+    aux = aux + 1
+    LSHs = {}
+    for docId in range(0, len(docs)):
+        vector = minHashing[aux2:aux2+r, docId]
+        bucket = hash_to_bucket(vector, k)
+        if bucket in LSHs:
+            LSHs[bucket].append(docId)
+        else:
+            LSHs[bucket] = [docId]
+        results.append(LSHs)
+    aux2=aux2+r
+
+print(results)
 pdb.set_trace()
+    
+
+
+
+
