@@ -14,7 +14,7 @@ import random
 n = 15
 
 # Size of shingles
-k = 3
+s = 3
 
 # Read dataset
 spark = SparkSession.builder.master('local[*]').appName("lab1").getOrCreate()
@@ -53,7 +53,7 @@ def cleanDoc(doc):
     return filtered_doc
 
 # Instantiate Shingling class
-shingler = Shingling(k=k)
+shingler = Shingling(k=s) # Make shingles of size s
 shinglings = list()
 hashes = list()
 # To load all the shinglings and hashes from each document
@@ -130,7 +130,7 @@ M1 = np.hstack((M, permutations))
 
 # Perform min hashing
 
-# Generate the minHashing matrix with very high values by default
+# Generate the signature matrix with very high values by default
 minHashing = np.full([len(hashes),signature_num], 999999, dtype=np.int64).T
 
 
@@ -156,7 +156,8 @@ for rIndex in range(0, M1.shape[0]-1):
 sig_comparator = CompareSignature()
 # UNCOMMENT FOLLOWING LINE TO GET THE SIMILARITY BETWEEN DOCS 0 AND 2
 # YOU CAN ALSO CHANGE THE INDEX TO SELECT ANY DOC YOU WANT.
-# sig_comparator.comparator(minHashing[:, 0], minHashing[:, 2]))
+for i in range(0, len(docs)):
+    print(sig_comparator.comparator(minHashing[:, 4], minHashing[:, i]))
 
 
 # LSH
@@ -195,6 +196,6 @@ while aux < len(minHashing)/r:
 for result in results:
     print(result.values())
 
-pdb.set_trace()
+#pdb.set_trace()
 
 

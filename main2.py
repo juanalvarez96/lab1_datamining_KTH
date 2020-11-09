@@ -114,12 +114,13 @@ for rIndex in range(0, M1.shape[0]-1):
 
 # Compare signatures
 sig_comparator = CompareSignature()
-#sig_comparator.comparator(minHashing[:, 0], minHashing[:, 2])
+for i in range(0, len(docs)):
+    print(sig_comparator.comparator(minHashing[:, 0], minHashing[:, i]))
 #pdb.set_trace()
 
 # LSH
-b = 3 # Number of bands
-r = 2 # Number of rows per band
+b = 6 # Number of bands
+r = 1 # Number of rows per band
 k = 60 # Number of buckets
 t = (1/b)**(1/r) # Threshold
 aux = 0
@@ -148,8 +149,11 @@ while aux < len(minHashing)/r:
         results.append(LSHs)
     aux2=aux2+r
 
-print(results)
-pdb.set_trace()
+for result in results:
+    print(result.values())
+
+print("Threshold:{}".format(t))
+#pdb.set_trace()
     
 
 
