@@ -13,7 +13,7 @@ This is a project from KTH university Data Mining course. The objectives of the 
 
 Just run the main class and make sure you are inside the lab1 folder. Some packages can be installed
 ```sh
-$ cd lab1
+$ cd lab1_datamining_KTH
 $ python3 -m pip install numpy
 $ python3 -m pip install mmh3
 $ python3 -m pip install pyspark
