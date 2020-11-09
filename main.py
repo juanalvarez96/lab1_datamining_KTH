@@ -24,6 +24,7 @@ df = spark.read.option("header", True).csv('data/airline.csv')
 # We are only interested in one columns, the content
 df_final = df.select("content")
 
+# Function to get next prime number given a number
 def prime1(n):
     np=[]
     isprime=[]
@@ -42,7 +43,7 @@ def prime1(n):
 docs = df_final.sort(df_final.content.desc()).limit(n).collect()
 
 
-
+# Function to clean a single document
 def cleanDoc(doc):
     #pdb.set_trace()
     doc = doc.content
@@ -50,12 +51,13 @@ def cleanDoc(doc):
     filter_chars = ['.', '-', '´', ',', '(', ')', '‘', '’']
     filtered_doc = ''.join((filter(lambda x: x not in filter_chars, doc)))
     return filtered_doc
-# To get the next prime given a number
 
 # Instantiate Shingling class
 shingler = Shingling(k=k)
 shinglings = list()
 hashes = list()
+# To load all the shinglings and hashes from each document
+# in the shinglings and hashes list
 for doc in docs:
     #pdb.set_trace()
     doc = cleanDoc(doc)
@@ -66,8 +68,12 @@ for doc in docs:
     #print(shingler.shinglings_hash)
 
 # Compute similarity between two
-#pdb.set_trace()
+# Instantiate comparator for comparing two sets
 comparator = CompareSets()
+
+# Here we compare the doc number 0 with the rest of the docs
+# We do this using the CompareSets object.
+# Change 0 to select the doc wanted
 for hashi in hashes:
     comparator.jaccard_sim(hashes[0], hashi)
 
@@ -76,12 +82,14 @@ hashes_transformed = []
 for item in hashes: hashes_transformed.append(list(item))
 
 # Generate characteristic matrix
-merged = sum(hashes_transformed, []) # flatten list
-merged_unique = set(merged) # Get uniques
+merged = sum(hashes_transformed, []) # flatten all docs into one list
+merged_unique = set(merged) # Get unique shingles from all the documents as a set
 #pdb.set_trace()
-M = np.zeros([len(merged_unique), len(docs)])
-merged = list(merged_unique)
+M = np.zeros([len(merged_unique), len(docs)]) # Define characteristic matrix
+merged = list(merged_unique) # Convert flattened set to list
 
+# This loop fills the above-created characteristic matrix with 1s in
+# each hash that appears in multiple docs
 for i in range(0, len(docs)):
     big = np.array(merged)
     small = np.array(hashes_transformed[i])
@@ -95,13 +103,15 @@ print("Shape of characteristic matrix: {}".format(M.shape))
 # Generate permutated rows
 from numpy.random import randint
 #pdb.set_trace()
+# Signature number are the number of permutations to be performed
 signature_num = 50
-prime = 15
+prime = 0
 values = random.sample(range(1, len(M)), signature_num*2)
+# Generate coefficients for each hashing function to get a new permuted column
 a_coef = values[0:signature_num]
 b_coef = values[signature_num:(signature_num*2)]
 
-#for i in range ()
+# Generate the permutations using the hashing function from above
 perms =  np.empty((signature_num, 0)).tolist()
 k = 0
 prime = prime1(len(M)) # Get next prime to M number of rows
@@ -114,14 +124,15 @@ for perm in perms:
         i = i+1
     k = k+1
 permutations = np.array(perms).T
-#pdb.set_trace()
+
 # Merge M with permutated rows
 M1 = np.hstack((M, permutations))
 
 # Perform min hashing
+
+# Generate the minHashing matrix with very high values by default
 minHashing = np.full([len(hashes),signature_num], 999999, dtype=np.int64).T
 
-#pdb.set_trace()
 
 def change(indexes, rIndex):
     hashed_values = M1[rIndex, -signature_num:]
@@ -133,7 +144,7 @@ def change(indexes, rIndex):
                 minHashing[ind, index] = hashed_values[ind]
 
 
-
+# Update values in minHashing to get the signatures
 for rIndex in range(0, M1.shape[0]-1):
     indexes = np.where(M[rIndex,:]==1)[0]
     if len(indexes != 0):
@@ -141,20 +152,23 @@ for rIndex in range(0, M1.shape[0]-1):
 
 
 
-# Compare signatures
+# Instantiate signature compartor
 sig_comparator = CompareSignature()
-#sig_comparator.comparator(minHashing[:, 0], minHashing[:, 2])
-#pdb.set_trace()
+# UNCOMMENT FOLLOWING LINE TO GET THE SIMILARITY BETWEEN DOCS 0 AND 2
+# YOU CAN ALSO CHANGE THE INDEX TO SELECT ANY DOC YOU WANT.
+# sig_comparator.comparator(minHashing[:, 0], minHashing[:, 2]))
+
 
 # LSH
+# The values of b and r are defined to get a thersholf of 0.8!
 b = 6 # Number of bands
 r = 8 # Number of rows per band
 k = 100 # Number of buckets
-t = (1/b)**(1/r) # Threshold
-import mmh3
+t = (1/b)**(1/r) # Threshold ~0.8
+import mmh3 # Needed to do the hashing for LSH
 aux = 0
 results=[]
-# hash to bucket function:
+# Function that hashes vector to a bucket, given a number of buckets
 def hash_to_bucket(e, B):
     i = mmh3.hash128(str(e))
     p = i / float(2**128)
@@ -164,7 +178,7 @@ def hash_to_bucket(e, B):
     return B
 
 aux2 = 0
-#pdb.set_trace()
+# Perform LSH
 while aux < len(minHashing)/r: 
     aux = aux + 1
     LSHs = {}
