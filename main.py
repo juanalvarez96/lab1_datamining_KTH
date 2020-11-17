@@ -190,7 +190,7 @@ while aux < len(minHashing)/r:
             LSHs[bucket].append(docId)
         else:
             LSHs[bucket] = [docId]
-        results.append(LSHs)
+    results.append(LSHs)
     aux2=aux2+r
 
 for result in results:
